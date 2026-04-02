@@ -42,27 +42,18 @@ st.markdown('<h1>CineMatch AI</h1>', unsafe_allow_html=True)
 st.markdown('<p class="subtitle">Discover your next favorite movie</p>', unsafe_allow_html=True)
 
 @st.cache_data
-def fetch_poster_url(title, year):
+def fetch_poster_url(movie_id, title):
+    # Fetch from TMDB using a standard tutorial API key
+    try:
+        url = f"https://api.themoviedb.org/3/movie/{movie_id}?api_key=8265bd1679663a7ea12ac168da84d2e8&language=en-US"
+        data = requests.get(url, timeout=5).json()
+        poster_path = data.get('poster_path')
+        if poster_path:
+            return f"https://image.tmdb.org/t/p/w500{poster_path}"
+    except Exception as e:
+        pass
+        
     clean_title = urllib.parse.quote(title)
-    
-    # Try with year first as it is more accurate
-    titles_to_try = []
-    if year:
-        titles_to_try.append(f"{clean_title}%20({year}%20film)")
-    titles_to_try.append(f"{clean_title}%20(film)")
-    titles_to_try.append(clean_title)
-
-    for t in titles_to_try:
-        url = f"https://en.wikipedia.org/w/api.php?action=query&titles={t}&prop=pageimages&format=json&pithumbsize=500"
-        try:
-            res = requests.get(url, timeout=5).json()
-            pages = res.get('query', {}).get('pages', {})
-            page_id = list(pages.keys())[0]
-            if page_id != '-1' and 'thumbnail' in pages[page_id]:
-                return pages[page_id]['thumbnail']['source']
-        except:
-            pass
-            
     return f"https://ui-avatars.com/api/?name={clean_title}&background=334155&color=fff&size=500"
 
 
@@ -91,6 +82,7 @@ def load_data():
             except: keywords = []
                 
         movies_data.append({
+            'id': row['id'],
             'title': str(row['title']).strip(),
             'genres': genres,
             'keywords': keywords,
@@ -217,7 +209,7 @@ if find_button:
         cols = st.columns(4)
         for idx, rec in enumerate(recs):
             m_data = movies_dict[rec]
-            poster_url = fetch_poster_url(m_data['title'], m_data['year'])
+            poster_url = fetch_poster_url(m_data['id'], m_data['title'])
             
             with cols[idx % 4]:
                 st.markdown(f'''
