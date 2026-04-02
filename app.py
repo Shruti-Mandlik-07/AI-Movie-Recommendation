@@ -32,6 +32,38 @@ st.markdown("""
         font-size: 1.2rem;
         margin-bottom: 3rem;
     }
+    
+    /* Premium Streamlit Input & Button Overrides */
+    div[data-baseweb="select"] > div {
+        background-color: #1e293b;
+        border: 2px solid #334155;
+        border-radius: 12px;
+        color: white;
+        transition: all 0.3s ease;
+    }
+    div[data-baseweb="select"] > div:hover {
+        border-color: #3b82f6;
+    }
+    div.stButton > button {
+        background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 0.75rem 1.5rem;
+        font-size: 1.15rem;
+        font-weight: 700;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+    }
+    div.stButton > button:hover {
+        transform: translateY(-3px) scale(1.02);
+        box-shadow: 0 8px 25px rgba(99, 102, 241, 0.6);
+        color: white;
+    }
+    div.stButton > button:active {
+        transform: translateY(1px);
+    }
+    
     /* Hide some default Streamlit elements for cleaner UI */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
