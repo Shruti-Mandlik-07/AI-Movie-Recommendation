@@ -12,65 +12,170 @@ st.set_page_config(page_title="CineMatch AI", layout="wide", page_icon="🍿")
 
 st.markdown("""
     <style>
-    .stApp {
-        background-color: #0f172a;
-        color: #f8fafc;
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap');
+
+    html, body, [class*="css"] {
+        font-family: 'Outfit', sans-serif;
     }
+
+    /* Attractive Pastel Combo - Soft Periwinkle to Silver */
+    [data-testid="stAppViewContainer"] {
+        background: linear-gradient(135deg, #e4efe9 0%, #93a5ce 100%);
+        background-attachment: fixed;
+    }
+    
+    [data-testid="stHeader"] {
+        background-color: transparent;
+    }
+
+    .stApp {
+        color: #1e293b;
+    }
+    
+    /* Beautiful Gradient Title */
     h1 {
         text-align: center;
-        background: -webkit-linear-gradient(45deg, #3b82f6, #8b5cf6);
+        background: linear-gradient(to right, #ff416c, #ff4b2b, #f53844, #42378f);
+        background-size: 300% 300%;
         -webkit-background-clip: text;
         background-clip: text;
         -webkit-text-fill-color: transparent;
         font-weight: 800;
-        font-size: 3rem !important;
-        margin-bottom: 0rem;
+        font-size: 4.5rem !important;
+        margin-bottom: 0px;
+        animation: gradientShift 5s ease infinite;
+        text-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
     }
+    
+    @keyframes gradientShift {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+
     p.subtitle {
         text-align: center;
-        color: #94a3b8;
-        font-size: 1.2rem;
-        margin-bottom: 3rem;
+        color: #334155;
+        font-size: 1.3rem;
+        margin-bottom: 3.5rem;
+        font-weight: 400;
+        letter-spacing: 1px;
     }
     
-    /* Premium Streamlit Input & Button Overrides */
+    /* Input Overrides */
     div[data-baseweb="select"] > div {
-        background-color: #1e293b;
-        border: 2px solid #334155;
+        background-color: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(10px);
+        border: 2px solid rgba(255, 65, 108, 0.3);
         border-radius: 12px;
-        color: white;
+        padding: 5px;
+        font-size: 1.15rem;
         transition: all 0.3s ease;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
     }
     div[data-baseweb="select"] > div:hover {
-        border-color: #3b82f6;
-    }
-    div.stButton > button {
-        background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
-        color: white;
-        border: none;
-        border-radius: 12px;
-        padding: 0.75rem 1.5rem;
-        font-size: 1.15rem;
-        font-weight: 700;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
-    }
-    div.stButton > button:hover {
-        transform: translateY(-3px) scale(1.02);
-        box-shadow: 0 8px 25px rgba(99, 102, 241, 0.6);
-        color: white;
-    }
-    div.stButton > button:active {
-        transform: translateY(1px);
+        border-color: #ff416c;
+        box-shadow: 0 0 15px rgba(255, 65, 108, 0.3);
     }
     
+    /* Striking Button with Click Animation */
+    @keyframes clickPulse {
+        0% { box-shadow: 0 0 0 0 rgba(255, 75, 43, 0.7); }
+        70% { box-shadow: 0 0 0 20px rgba(255, 75, 43, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(255, 75, 43, 0); }
+    }
+
+    div.stButton {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-top: 10px;
+    }
+    div.stButton > button {
+        background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
+        color: white !important;
+        border: none;
+        border-radius: 12px;
+        padding: 0.8rem 1.5rem;
+        font-size: 1.3rem;
+        font-weight: 800;
+        letter-spacing: 1.5px;
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        box-shadow: 0 8px 15px rgba(255, 65, 108, 0.4);
+        width: 100%;
+        text-transform: uppercase;
+        position: relative;
+        overflow: hidden;
+    }
+    div.stButton > button:hover {
+        transform: translateY(-4px) scale(1.02);
+        box-shadow: 0 15px 25px rgba(255, 65, 108, 0.6);
+        background: linear-gradient(135deg, #ff4b2b 0%, #ff416c 100%);
+    }
+    div.stButton > button:active {
+        transform: translateY(2px) scale(0.96);
+        animation: clickPulse 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+    
+    /* Snappy Movie Card Animations */
+    @keyframes fadeInSlideUp {
+        0% { opacity: 0; transform: translateY(20px); }
+        100% { opacity: 1; transform: translateY(0); }
+    }
+
+    .movie-poster-container {
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+        margin-bottom: 10px;
+        transition: all 0.25s ease;
+        position: relative;
+        background-color: #ffffff;
+    }
+
+    .movie-poster-container::after {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: linear-gradient(to top, rgba(255,255,255,0.4), transparent);
+        opacity: 0;
+        transition: opacity 0.25s ease;
+        pointer-events: none;
+    }
+
+    .movie-poster-container:hover {
+        transform: scale(1.03) translateY(-4px);
+        box-shadow: 0 15px 30px rgba(255, 65, 108, 0.3);
+        border: 2px solid #ff416c;
+    }
+    
+    .movie-poster-container:hover::after {
+        opacity: 1;
+    }
+
+    .movie-title {
+        font-size: 1.15rem;
+        font-weight: 800;
+        color: #1e293b;
+        margin-bottom: 3px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .movie-genres {
+        color: #64748b;
+        font-size: 0.95rem;
+        font-weight: 600;
+        margin-bottom: 20px;
+    }
+
     /* Hide some default Streamlit elements for cleaner UI */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     </style>
 """, unsafe_allow_html=True)
 
-st.markdown('<h1>CineMatch AI</h1>', unsafe_allow_html=True)
+st.markdown('<h1>🍿 CineMatch AI</h1>', unsafe_allow_html=True)
 st.markdown('<p class="subtitle">Discover your next favorite movie</p>', unsafe_allow_html=True)
 
 @st.cache_data
@@ -217,17 +322,17 @@ def ucs_recommendation(start_node, limit=12):
 
 
 # UI layout
-col1, col2 = st.columns([3, 1])
+# Moving the button right below the search bar for a professional centralized look
+selected_movie = st.selectbox("Select a Movie you like:", movie_names[:2000])
 
-with col1:
-    selected_movie = st.selectbox("Select a Movie you like:", movie_names[:2000])
+st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
 
-with col2:
-    st.write("")
-    st.write("")
-    find_button = st.button("Find Recommendations 🚀", use_container_width=True)
+find_button = st.button("Find Recommendations 🚀", use_container_width=True)
 
 if find_button:
+    selected_movie_data = movies_dict[selected_movie]
+    sel_genres = ", ".join(selected_movie_data['genres'])
+
     with st.spinner(f"Finding the best recommendations..."):
         # Utilizing Uniform Cost Search (UCS) under the hood for most accurate results
         recs = ucs_recommendation(selected_movie)
@@ -235,7 +340,14 @@ if find_button:
     if not recs:
         st.warning("No connections found for this movie. Try another one!")
     else:
-        st.markdown("### Top Recommendations:")
+        st.markdown(f"## ✨ Recommendations for **{selected_movie}**")
+        
+        # Display engaging genres and messages
+        if sel_genres:
+            st.info(f"🎭 **Genres you're interested in:** {sel_genres}")
+        
+        st.success("🍿 **Grab your popcorn!** We hope you discover your next favorite movie from these hand-picked recommendations. Enjoy the show! 🎬")
+        st.markdown("<br>", unsafe_allow_html=True)
         
         # Display as grid 4x3
         cols = st.columns(4)
@@ -243,11 +355,16 @@ if find_button:
             m_data = movies_dict[rec]
             poster_url = fetch_poster_url(m_data['id'], m_data['title'])
             
+            # Fast, snappy staggered animation
+            delay = (idx % 4) * 0.05 + (idx // 4) * 0.05
+            
             with cols[idx % 4]:
                 st.markdown(f'''
-                    <div style="width: 100%; aspect-ratio: 2/3; overflow: hidden; border-radius: 12px; margin-bottom: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.5);">
-                        <img src="{poster_url}" style="width: 100%; height: 100%; object-fit: cover;" alt="{m_data['title']} Poster"/>
+                    <div style="animation: fadeInSlideUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; animation-delay: {delay}s; opacity: 0; transform: translateY(20px);">
+                        <div class="movie-poster-container" style="width: 100%; aspect-ratio: 2/3;">
+                            <img src="{poster_url}" style="width: 100%; height: 100%; object-fit: cover;" alt="{m_data['title']} Poster"/>
+                        </div>
+                        <div class="movie-title">{m_data['title']}</div>
+                        <div class="movie-genres">{", ".join(m_data['genres'][:3])}</div>
                     </div>
-                    <div style="font-weight: 700; font-size: 1.05rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{m_data['title']}</div>
-                    <div style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 25px;">{", ".join(m_data['genres'][:3])}</div>
                 ''', unsafe_allow_html=True)
