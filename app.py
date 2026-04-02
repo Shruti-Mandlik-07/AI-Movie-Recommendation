@@ -5,6 +5,7 @@ import ast
 import requests
 import heapq
 import urllib.parse
+from datetime import datetime
 
 # Set page config
 st.set_page_config(page_title="CineMatch AI", layout="wide", page_icon="🍿")
@@ -31,35 +32,37 @@ st.markdown("""
         font-size: 1.2rem;
         margin-bottom: 3rem;
     }
+    /* Hide some default Streamlit elements for cleaner UI */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
     </style>
 """, unsafe_allow_html=True)
 
 st.markdown('<h1>CineMatch AI</h1>', unsafe_allow_html=True)
-st.markdown('<p class="subtitle">Discover your next favorite movie using AI Graph Algorithms</p>', unsafe_allow_html=True)
+st.markdown('<p class="subtitle">Discover your next favorite movie</p>', unsafe_allow_html=True)
 
 @st.cache_data
-def fetch_poster_url(title):
+def fetch_poster_url(title, year):
     clean_title = urllib.parse.quote(title)
     
-    # Try normal title
-    url = f"https://en.wikipedia.org/w/api.php?action=query&titles={clean_title}&prop=pageimages&format=json&pithumbsize=500"
-    try:
-        res = requests.get(url, timeout=5).json()
-        pages = res.get('query', {}).get('pages', {})
-        page_id = list(pages.keys())[0]
-        if page_id != '-1' and 'thumbnail' in pages[page_id]:
-            return pages[page_id]['thumbnail']['source']
+    # Try with year first as it is more accurate
+    titles_to_try = []
+    if year:
+        titles_to_try.append(f"{clean_title}%20({year}%20film)")
+    titles_to_try.append(f"{clean_title}%20(film)")
+    titles_to_try.append(clean_title)
+
+    for t in titles_to_try:
+        url = f"https://en.wikipedia.org/w/api.php?action=query&titles={t}&prop=pageimages&format=json&pithumbsize=500"
+        try:
+            res = requests.get(url, timeout=5).json()
+            pages = res.get('query', {}).get('pages', {})
+            page_id = list(pages.keys())[0]
+            if page_id != '-1' and 'thumbnail' in pages[page_id]:
+                return pages[page_id]['thumbnail']['source']
+        except:
+            pass
             
-        # Try appending '(film)'
-        url_film = f"https://en.wikipedia.org/w/api.php?action=query&titles={clean_title}%20(film)&prop=pageimages&format=json&pithumbsize=500"
-        res_film = requests.get(url_film, timeout=5).json()
-        pages_film = res_film.get('query', {}).get('pages', {})
-        page_id_film = list(pages_film.keys())[0]
-        if page_id_film != '-1' and 'thumbnail' in pages_film[page_id_film]:
-            return pages_film[page_id_film]['thumbnail']['source']
-    except Exception as e:
-        pass
-        
     return f"https://ui-avatars.com/api/?name={clean_title}&background=334155&color=fff&size=500"
 
 
@@ -71,6 +74,12 @@ def load_data():
     for index, row in df.iterrows():
         if pd.isna(row['title']): continue
         
+        # Get year from release_date safely
+        year = ""
+        rd = str(row.get('release_date', ''))
+        if len(rd) >= 4 and rd[:4].isdigit():
+            year = rd[:4]
+            
         try: genres = [g['name'] for g in json.loads(row.get('genres', '[]'))]
         except:
             try: genres = [g['name'] for g in ast.literal_eval(row.get('genres', '[]'))]
@@ -84,7 +93,8 @@ def load_data():
         movies_data.append({
             'title': str(row['title']).strip(),
             'genres': genres,
-            'keywords': keywords
+            'keywords': keywords,
+            'year': year
         })
     
     graph = {}
@@ -183,26 +193,20 @@ def ucs_recommendation(start_node, limit=12):
 
 
 # UI layout
-col1, col2, col3 = st.columns([2, 2, 1])
+col1, col2 = st.columns([3, 1])
 
 with col1:
     selected_movie = st.selectbox("Select a Movie you like:", movie_names[:2000])
 
 with col2:
-    selected_algo = st.selectbox("Choose Recommendation Logic:", ["BFS (Broad Similarities)", "DFS (Deep Diverse Path)", "UCS (Cost-based Optimal Similarity)"])
-
-with col3:
     st.write("")
     st.write("")
-    find_button = st.button("Find Matches 🚀", use_container_width=True)
+    find_button = st.button("Find Recommendations 🚀", use_container_width=True)
 
 if find_button:
-    algo_key = selected_algo.split(" ")[0]
-    
-    with st.spinner(f"Navigating the graph using {algo_key}..."):
-        if algo_key == "BFS": recs = bfs_recommendation(selected_movie)
-        elif algo_key == "DFS": recs = dfs_recommendation(selected_movie)
-        else: recs = ucs_recommendation(selected_movie)
+    with st.spinner(f"Finding the best recommendations..."):
+        # Utilizing Uniform Cost Search (UCS) under the hood for most accurate results
+        recs = ucs_recommendation(selected_movie)
         
     if not recs:
         st.warning("No connections found for this movie. Try another one!")
@@ -213,10 +217,13 @@ if find_button:
         cols = st.columns(4)
         for idx, rec in enumerate(recs):
             m_data = movies_dict[rec]
-            poster_url = fetch_poster_url(m_data['title'])
+            poster_url = fetch_poster_url(m_data['title'], m_data['year'])
             
             with cols[idx % 4]:
-                st.image(poster_url, use_container_width=True)
-                st.markdown(f"**{m_data['title']}**")
-                st.caption(", ".join(m_data['genres'][:3]))
-                st.write("")
+                st.markdown(f'''
+                    <div style="width: 100%; aspect-ratio: 2/3; overflow: hidden; border-radius: 12px; margin-bottom: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.5);">
+                        <img src="{poster_url}" style="width: 100%; height: 100%; object-fit: cover;" alt="{m_data['title']} Poster"/>
+                    </div>
+                    <div style="font-weight: 700; font-size: 1.05rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{m_data['title']}</div>
+                    <div style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 25px;">{", ".join(m_data['genres'][:3])}</div>
+                ''', unsafe_allow_html=True)
